@@ -11,32 +11,32 @@ const router = createRouter({
     {
       path: '/login',
       name: 'LoginView',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/auth/LoginView.vue'),
     },
     {
       path: '/register',
       name: 'RegisterView',
-      component: () => import('../views/RegisterView.vue'),
+      component: () => import('../views/auth/RegisterView.vue'),
     },
     {
       path: '/confirmation',
       name: 'MailConfirmationView',
-      component: () => import('../views/MailConfirmationView.vue'),
+      component: () => import('../views/auth/MailConfirmationView.vue'),
     },
     {
       path: '/verify/:token',
       name: 'EmailVerificationView',
-      component: () => import('../views/EmailVerificationView.vue'),
+      component: () => import('../views/auth/EmailVerificationView.vue'),
     },
     {
       path: '/forgotPassword',
       name: 'ForgotPasswordView',
-      component: () => import('../views/ForgotPasswordView.vue'),
+      component: () => import('../views/auth/ForgotPasswordView.vue'),
     },
     {
       path: '/resetPassword/:token',
       name: 'ResetPasswordView',
-      component: () => import('../views/ResetPasswordView.vue'),
+      component: () => import('../views/auth/ResetPasswordView.vue'),
     },
   ],
 })
