@@ -4,6 +4,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/test',
+      name: 'test',
+      component: () => import('../views/TestView.vue'),
+    },
+    {
       path: '/',
       name: 'LendingView',
       component: () => import('../views/LendingView.vue'),
@@ -37,6 +42,16 @@ const router = createRouter({
       path: '/resetPassword/:token',
       name: 'ResetPasswordView',
       component: () => import('../views/auth/ResetPasswordView.vue'),
+    },
+    {
+      path: '/user/management',
+      name: 'UserManagmentView',
+      component: () => import('../views/UserManagmentView.vue'),
+    },
+    {
+      path: '/training/types/management',
+      name: 'TrainingTypesManagementView',
+      component: () => import('../views/TrainingTypesManagement.vue'),
     },
   ],
 })
