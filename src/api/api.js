@@ -11,7 +11,7 @@ const getAccessToken = () => {
 export const refreshToken = async () => {
     try {
         const refreshToken = Cookies.get('refreshToken')
-        const response = await axios.get(`${API_URL}/auth/refresh`, {
+        const response = await axios.get(`${API_URL}/user/token/refresh`, {
             headers: {
                 Authorization: refreshToken,
                 'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ export const refreshToken = async () => {
         })
         const { accessToken } = response.data
 
-        Cookies.set('accessToken', accessToken, { expires: 5 / (24 * 60) }) // 5 minutes
+        Cookies.set('accessToken', accessToken, { expires: 5 / (24 * 60) })
 
         return accessToken
     } catch (error) {
@@ -44,7 +44,9 @@ export const makeApiRequest = async (url, method, data = null, params = null) =>
 
         return response.data
     } catch (error) {
-        if (error.response && error.response.data.message == 'Unauthorized Access') {
+        console.log(error);
+
+        if (error.response && (error.response.data.message == 'Unauthorized' || error.response.data.message == 'No token provided')) {
             try {
                 await refreshToken()
                 return makeApiRequest(url, method, data)
