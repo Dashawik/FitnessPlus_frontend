@@ -2,7 +2,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import router from '../router'
 
-export const API_URL = 'http://127.0.0.1:3001'
+export const API_URL = 'https://api-fitnessplus.sded.cc'
 
 const getAccessToken = () => {
     return Cookies.get('accessToken')
