@@ -2,10 +2,13 @@
     <HeaderTabs />
     <div class="user-management-container">
         <div class="content-wrapper">
+            <h2>User Management</h2>
             <div v-if="isLoading" class="skeleton-wrapper">
                 <el-skeleton :rows="5" animated />
             </div>
-            <el-table v-else :data="users" style="width: 100%" border class="centered-table">
+            <el-table v-else :data="users" style="width: 100%" border class="centered-table"
+                :cell-style="{ textAlign: 'center', padding: '12px' }"
+                :header-cell-style="{ textAlign: 'center', background: '#f5f7fa', fontWeight: '500', padding: '12px' }">
                 <el-table-column prop="firstName" label="First Name" min-width="180"></el-table-column>
                 <el-table-column prop="lastName" label="Last Name" min-width="180"></el-table-column>
                 <el-table-column prop="email" label="Email" min-width="250"></el-table-column>
@@ -251,7 +254,6 @@ export default {
     width: 100%;
     padding-left: 24px;
     padding-right: 24px;
-    /* background: #f7f8fa; */
     min-height: 100vh;
 }
 
@@ -270,12 +272,6 @@ h2 {
     text-align: center;
 }
 
-.centered-tabs {
-    width: 100%;
-    margin-bottom: 16px;
-    text-align: center;
-}
-
 .skeleton-wrapper {
     width: 100%;
     padding: 16px;
@@ -289,20 +285,33 @@ h2 {
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     width: 100%;
+    overflow-x: auto;
+    table-layout: fixed;
 }
 
-.centered-table :deep(.el-table__body-wrapper) {
-    width: 100% !important;
-}
-
+.centered-table :deep(.el-table__body-wrapper),
 .centered-table :deep(.el-table__header-wrapper) {
     width: 100% !important;
+    overflow: hidden;
+}
+
+.centered-table :deep(.el-table__row) {
+    display: table-row;
+    width: 100%;
+}
+
+.centered-table :deep(.el-table__cell) {
+    padding: 12px;
+    text-align: center;
+    vertical-align: middle;
+    word-break: break-word;
 }
 
 .action-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: 8px;
+    width: 100%;
 }
 
 .el-button {

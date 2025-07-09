@@ -15,19 +15,19 @@
             <el-table v-else :data="trainingTypes" style="width: 100%" border class="centered-table"
                 :cell-style="{ textAlign: 'center', padding: '12px' }"
                 :header-cell-style="{ textAlign: 'center', background: '#f5f7fa', fontWeight: '500', padding: '12px' }">
-                <el-table-column prop="id" label="ID" :min-width="100"></el-table-column>
-                <el-table-column prop="name" label="Name" :min-width="200"></el-table-column>
-                <el-table-column prop="createdAt" label="Created At" :min-width="200">
+                <el-table-column prop="id" label="ID" min-width="100"></el-table-column>
+                <el-table-column prop="name" label="Name" min-width="200"></el-table-column>
+                <el-table-column prop="createdAt" label="Created At" min-width="200">
                     <template #default="scope">
                         {{ formatDate(scope.row.createdAt) }}
                     </template>
                 </el-table-column>
-                <el-table-column prop="updatedAt" label="Updated At" :min-width="200">
+                <el-table-column prop="updatedAt" label="Updated At" min-width="200">
                     <template #default="scope">
                         {{ formatDate(scope.row.updatedAt) }}
                     </template>
                 </el-table-column>
-                <el-table-column label="Actions" :min-width="300">
+                <el-table-column label="Actions" min-width="300">
                     <template #default="{ row }">
                         <div class="action-buttons">
                             <el-button type="primary" size="small" @click="openEditDialog(row)">
@@ -47,7 +47,6 @@
                 </el-table-column>
             </el-table>
 
-            <!-- Діалог редагування -->
             <el-dialog title="Edit Training Type" v-model="editDialogVisible" width="30%"
                 :before-close="handleCloseDialog" class="centered-dialog">
                 <el-form ref="editForm" :model="editFormData" :rules="editRules" label-position="top"
@@ -75,7 +74,6 @@
                 </template>
             </el-dialog>
 
-            <!-- Діалог створення -->
             <el-dialog title="Add Training Type" v-model="addDialogVisible" width="30%"
                 :before-close="handleCloseDialog" class="centered-dialog">
                 <el-form ref="addForm" :model="newTrainingType" :rules="editRules" label-position="top"
@@ -156,7 +154,6 @@ export default {
             try {
                 const data = await getTrainingTypeListAPI()
                 this.trainingTypes = data
-                console.log(data)
             } catch ({ response }) {
                 if (response?.data?.details) {
                     const { details } = response.data
@@ -261,6 +258,8 @@ export default {
     padding-left: 24px;
     padding-right: 24px;
     min-height: 100vh;
+    display: flex;
+    justify-content: center;
 }
 
 .content-wrapper {
@@ -268,9 +267,8 @@ export default {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-top: calc(64px + 24px);
+    max-width: 100%;
+    padding-top: 0;
 }
 
 h2 {
@@ -394,7 +392,7 @@ h2 {
     }
 
     .content-wrapper {
-        padding-top: calc(56px + 16px);
+        padding-top: 0;
     }
 
     h2 {
