@@ -47,3 +47,7 @@ export async function updateUserAPI(userId, userData) {
 export async function resetAuthAPI(userId) {
     return makeApiRequest(`${API_URL}/user/token/${userId}`, 'DELETE')
 }
+
+export async function getTrainersAPI() {
+    return makeApiRequest(`${API_URL}/user`, 'GET', null, { filter: "TRAINER" })
+}

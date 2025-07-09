@@ -53,6 +53,11 @@ const router = createRouter({
       name: 'TrainingTypesManagementView',
       component: () => import('../views/TrainingTypesManagement.vue'),
     },
+    {
+      path: '/training',
+      name: 'TrainingCalendarView',
+      component: () => import('../views/TrainingCalendar.vue'),
+    },
   ],
 })
 
