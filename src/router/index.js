@@ -58,6 +58,11 @@ const router = createRouter({
       name: 'TrainingCalendarView',
       component: () => import('../views/TrainingCalendar.vue'),
     },
+    {
+      path: '/subscription/template',
+      name: 'SubscriptionTemplateView',
+      component: () => import('../views/SubscriptionTemplate.vue'),
+    },
   ],
 })
 

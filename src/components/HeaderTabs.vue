@@ -3,6 +3,7 @@
         <el-tab-pane label="Training сalendar" name="/training" />
         <el-tab-pane label="User management" name="/user/management" />
         <el-tab-pane label="Training types management" name="/training/types/management" />
+        <el-tab-pane label="Subscription template management" name="/subscription/template" />
     </el-tabs>
 
 </template>
