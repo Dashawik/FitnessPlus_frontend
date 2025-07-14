@@ -37,6 +37,7 @@ export const makeApiRequest = async (url, method, data = null, params = null) =>
             url: `${url}`,
             headers: {
                 Authorization: `${accessToken}`,
+                'Content-Type': 'application/json',
             },
             data,
             params
