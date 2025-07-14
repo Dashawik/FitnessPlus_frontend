@@ -1,4 +1,5 @@
 <template>
+    <AppHeader />
     <HeaderTabs />
     <div class="subscription-container">
         <div class="content-wrapper">
@@ -146,6 +147,9 @@
 import { ElMessage } from 'element-plus'
 import { Edit, Delete, Document, Check, Plus, Coin, User } from '@element-plus/icons-vue'
 import HeaderTabs from '@/components/HeaderTabs.vue'
+import AppHeader from '@/components/AppHeader.vue'
+
+
 import {
     getSubscriptionListAPI,
     createSubscriptionAPI,
@@ -164,6 +168,7 @@ export default {
         Coin,
         User,
         HeaderTabs,
+        AppHeader
     },
     data() {
         return {

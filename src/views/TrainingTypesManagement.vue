@@ -1,4 +1,6 @@
 <template>
+
+    <AppHeader />
     <HeaderTabs />
     <div class="training-types-container">
         <div class="content-wrapper">
@@ -109,6 +111,7 @@ import { ElMessage } from 'element-plus'
 import { Edit, Delete, Document, Check, Plus } from '@element-plus/icons-vue'
 import { getTrainingTypeListAPI, updateTrainingTypeAPI, deleteTrainingTypeAPI, createTrainingTypeAPI } from '@/api/training/type'
 import HeaderTabs from '@/components/HeaderTabs.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 export default {
     name: 'TrainingTypesManagement',
@@ -118,7 +121,8 @@ export default {
         Document,
         Check,
         Plus,
-        HeaderTabs
+        HeaderTabs,
+        AppHeader
     },
     data() {
         return {

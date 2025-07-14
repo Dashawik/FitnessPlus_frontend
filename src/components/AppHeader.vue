@@ -1,20 +1,68 @@
 <template>
   <header class="header">
     <div class="header-container">
-      <router-link to="/" class="logo">
-        <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
-      </router-link>
+      <div class="left-section">
+        <router-link to="/home" class="logo">
+          <img src="@/assets/logo.png" alt="Logo" class="logo-image" />
+        </router-link>
+      </div>
       <nav class="nav">
-        <router-link to="/login" class="nav-button">Log In</router-link>
-        <router-link to="/register" class="nav-button primary">Register</router-link>
+        <template v-if="isAuthenticated">
+          <el-dropdown class="dropdown">
+            <template #default>
+              <span class="greeting">
+                Hello, {{ userName }}
+              </span>
+            </template>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="$router.push('/profile')">Profile Settings</el-dropdown-item>
+                <el-dropdown-item @click="logout">Log Out</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+        <template v-else>
+          <el-button type="default" @click="$router.push('/login')">Log In</el-button>
+          <el-button type="primary" @click="$router.push('/register')">Register</el-button>
+        </template>
       </nav>
     </div>
   </header>
 </template>
 
 <script>
+import Cookies from 'js-cookie'
+import { ElMessage } from 'element-plus'
+
 export default {
-  name: 'AppHeader'
+  name: 'AppHeader',
+  data() {
+    return {
+      userName: 'User',
+    }
+  },
+  created() {
+    const user = Cookies.get('user')
+    if (user) {
+      const data = JSON.parse(user)
+      this.userName = data.firstName + ' ' + data.lastName || 'User'
+    }
+  },
+  computed: {
+    isAuthenticated() {
+      return Cookies.get('refreshToken') !== undefined
+    },
+  },
+  methods: {
+    logout() {
+      Cookies.remove('refreshToken')
+      Cookies.remove('accessToken')
+      Cookies.remove('user')
+      ElMessage.success('Logged out successfully')
+      this.$router.push('/')
+    },
+  },
 }
 </script>
 
@@ -38,6 +86,12 @@ export default {
   padding: 16px 24px;
 }
 
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .logo-image {
   height: 40px;
   width: auto;
@@ -45,33 +99,63 @@ export default {
 
 .nav {
   display: flex;
+  align-items: center;
   gap: 16px;
 }
 
-.nav-button {
-  display: inline-block;
-  padding: 8px 16px;
+.greeting {
   font-size: 14px;
   font-weight: 500;
-  text-decoration: none;
   color: #606266;
-  border-radius: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
-.nav-button:hover {
+.greeting:hover {
   color: #165dff;
   background: #f0f7ff;
 }
 
-.nav-button.primary {
+.el-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.el-button--default {
+  color: #606266;
+}
+
+.el-button--default:hover {
+  color: #165dff;
+  background: #f0f7ff;
+}
+
+.el-button--primary {
   background: #409eff;
   color: #ffffff;
 }
 
-.nav-button.primary:hover {
+.el-button--primary:hover {
   background: #165dff;
-  color: #ffffff;
+}
+
+.dropdown :deep(.el-dropdown-menu) {
+  padding: 0;
+}
+
+.dropdown :deep(.el-dropdown-menu__item) {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.dropdown :deep(.el-dropdown-menu__item:hover) {
+  background-color: #f0f7ff;
+  color: #165dff;
 }
 
 @media (max-width: 768px) {
@@ -83,8 +167,17 @@ export default {
     height: 32px;
   }
 
-  .nav-button {
+  .el-button {
     padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .greeting {
+    font-size: 13px;
+    padding: 3px 6px;
+  }
+
+  .dropdown :deep(.el-dropdown-menu__item) {
     font-size: 13px;
   }
 }

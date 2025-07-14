@@ -1,4 +1,5 @@
 <template>
+    <AppHeader />
     <HeaderTabs />
     <div class="user-management-container">
         <div class="content-wrapper">
@@ -39,7 +40,6 @@
                 </el-table-column>
             </el-table>
 
-            <!-- Діалог редагування -->
             <el-dialog title="Edit User" v-model="editDialogVisible" width="30%" :before-close="handleCloseDialog"
                 class="centered-dialog">
                 <el-form ref="editUserForm" :model="editFormData" :rules="editRules" label-position="top"
@@ -101,6 +101,7 @@ import { Edit, Delete, Refresh, User, Message, Check } from '@element-plus/icons
 import { getUserListAPI, deleteUserAPI, updateUserAPI, resetAuthAPI } from '@/api/user'
 
 import HeaderTabs from '@/components/HeaderTabs.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 export default {
     name: 'UserManagement',
@@ -111,7 +112,8 @@ export default {
         User,
         Message,
         Check,
-        HeaderTabs
+        HeaderTabs,
+        AppHeader
     },
     data() {
         return {

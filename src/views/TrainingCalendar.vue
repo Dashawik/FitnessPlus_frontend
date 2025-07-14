@@ -1,4 +1,5 @@
 <template>
+    <AppHeader />
     <HeaderTabs />
     <div class="training-types-container">
         <div class="content-wrapper">
@@ -43,7 +44,7 @@
                                         <div class="event-detail">Time: {{ formatTime(training.startTime) }} - {{
                                             formatTime(training.endTime) }}</div>
                                         <div class="event-detail">Spots: {{ training.availableSpots - training.usedSpots
-                                        }} / {{ training.availableSpots }}</div>
+                                            }} / {{ training.availableSpots }}</div>
                                         <div v-if="isAdmin || (isTrainer && training.trainer.id === userId && training.typeId === 1)"
                                             class="event-actions">
                                             <el-button type="text" @click.stop="editTraining(training)">Edit</el-button>
@@ -129,7 +130,7 @@
                     </p>
                     <p><strong>Time:</strong> {{ formatTime(selectedTraining.startTime) }} - {{
                         formatTime(selectedTraining.endTime)
-                    }}</p>
+                        }}</p>
                     <p><strong>Spots:</strong> {{ selectedTraining.availableSpots - selectedTraining.usedSpots }} / {{
                         selectedTraining.availableSpots }}</p>
                 </div>
@@ -158,6 +159,7 @@ import { getTrainingTypeListAPI } from '@/api/training/type'
 import { getTrainersAPI } from '@/api/user'
 import Cookies from 'js-cookie'
 import HeaderTabs from '@/components/HeaderTabs.vue'
+import AppHeader from '@/components/AppHeader.vue'
 
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -173,7 +175,8 @@ export default {
     components: {
         Plus,
         Check,
-        HeaderTabs
+        HeaderTabs,
+        AppHeader
     },
     data() {
         return {
@@ -460,6 +463,7 @@ export default {
     min-height: 100vh;
     display: flex;
     justify-content: center;
+
 }
 
 .content-wrapper {
