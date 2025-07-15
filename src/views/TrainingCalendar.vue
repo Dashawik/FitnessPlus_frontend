@@ -483,9 +483,17 @@ export default {
                             ElMessage.success(`Booked ${training.type.name} with ${training.trainer.firstName} ${training.trainer.lastName} on ${this.bookingForm.date} at ${this.bookingForm.time}`)
                             this.bookingDialogVisible = false
                             await this.loadTrainings()
-                        } catch (error) {
-                            ElMessage.error('Failed to book training: ' + error.message)
-                            console.error('Booking error:', error)
+                        } catch ({ response }) {
+                            console.log('Booking error:', response);
+
+                            if (response?.data?.details) {
+                                const { details } = response.data
+                                details.forEach((detail) => {
+                                    ElMessage.error(detail)
+                                })
+                            } else {
+                                ElMessage.error('An error occurred, please try again later')
+                            }
                         }
                     } else {
                         ElMessage.error('No available spots left!')
