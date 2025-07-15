@@ -13,6 +13,8 @@
 
         <el-tab-pane v-if="userRole === 'USER'" label="My subscription" name="/user/subscriptions" />
         <el-tab-pane v-if="userRole === 'USER'" label="My booking" name="/user/bookings" />
+
+        <el-tab-pane v-if="userRole === 'TRAINER' || userRole === 'ADMIN'" label="Reports" name="/report" />
     </el-tabs>
 </template>
 
@@ -24,13 +26,13 @@ export default {
     data() {
         return {
             activeTab: this.$route.path,
-            userRole: null
+            userRole: null,
         }
     },
     watch: {
         '$route.path'(newPath) {
             this.activeTab = newPath
-        }
+        },
     },
     async created() {
         const user = Cookies.get('user')
@@ -40,8 +42,8 @@ export default {
     methods: {
         handleTabClick(tab) {
             this.$router.push(tab.paneName)
-        }
-    }
+        },
+    },
 }
 </script>
 
