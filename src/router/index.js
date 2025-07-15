@@ -91,6 +91,12 @@ const router = createRouter({
       meta: { title: 'My bookings | FitnessPlus', requiresAuth: true, roles: ["USER"] },
     },
     {
+      path: '/subscriptions/managment',
+      name: 'SubscriptionsManagmentView',
+      component: () => import('../views/SubscriptionsManagmentView.vue'),
+      meta: { title: 'Subscriptions managment | FitnessPlus', requiresAuth: true, roles: ["ADMIN"] },
+    },
+    {
       path: '/profile',
       name: 'ProfileView',
       component: () => import('../views/ProfileView.vue'),

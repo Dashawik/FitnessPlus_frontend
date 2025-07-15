@@ -4,10 +4,12 @@
 
         <el-tab-pane v-if="userRole === 'ADMIN'" label="User management" name="/user/management" />
 
-        <el-tab-pane v-if="userRole === 'ADMIN'" label="Training types management" name="/training/types/management" />
+        <el-tab-pane v-if="userRole === 'ADMIN'" label="Subscriptions managment" name="/subscriptions/managment" />
 
         <el-tab-pane v-if="userRole === 'ADMIN'" label="Subscription template management"
             name="/subscription/template" />
+
+        <el-tab-pane v-if="userRole === 'ADMIN'" label="Training types management" name="/training/types/management" />
 
         <el-tab-pane v-if="userRole === 'USER'" label="My subscription" name="/user/subscriptions" />
         <el-tab-pane v-if="userRole === 'USER'" label="My booking" name="/user/bookings" />
