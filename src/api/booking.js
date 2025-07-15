@@ -8,4 +8,6 @@ export async function cancelBookingAPI(bookingId) {
     return makeApiRequest(`${API_URL}/booking/cancel/${bookingId}`, 'PUT')
 }
 
-
+export async function createBookingAPI(trainingId, subscriptionId) {
+    return makeApiRequest(`${API_URL}/booking`, 'POST', { trainingId, subscriptionId })
+}

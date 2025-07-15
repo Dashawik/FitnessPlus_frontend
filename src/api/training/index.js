@@ -21,3 +21,7 @@ export async function updateTrainingAPI(trainingId, trainingData) {
 export async function deleteTrainingAPI(trainingId) {
     return makeApiRequest(`${API_URL}/training/${trainingId}`, 'DELETE')
 }
+
+export async function getTrainingBookingsAPI(trainingId) {
+    return makeApiRequest(`${API_URL}/training/booking/${trainingId}`, 'GET')
+}

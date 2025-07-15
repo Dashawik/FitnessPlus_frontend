@@ -62,14 +62,20 @@
                 :before-close="handleCloseDialog" class="centered-dialog">
                 <el-form :model="bookingForm" :rules="bookingRules" ref="bookingForm" label-position="top"
                     class="centered-form">
-                    <el-form-item label="Name" prop="name">
-                        <el-input v-model="bookingForm.name" placeholder="Enter your name" />
+                    <el-form-item label="Subscription" prop="subscriptionId">
+                        <el-select v-model="bookingForm.subscriptionId" placeholder="Select subscription"
+                            style="width: 100%" :disabled="availableSubscriptions.length === 0">
+                            <el-option v-for="subscription in availableSubscriptions" :key="subscription.id"
+                                :label="`${subscription.template.name} (${subscription.availableSessions} sessions)`"
+                                :value="subscription.id" />
+                        </el-select>
                     </el-form-item>
                 </el-form>
                 <template #footer>
                     <span class="dialog-footer">
                         <el-button @click="bookingDialogVisible = false">Cancel</el-button>
-                        <el-button type="primary" @click="confirmBooking">
+                        <el-button type="primary" @click="confirmBooking"
+                            :disabled="!bookingForm.subscriptionId || selectedTraining.usedSpots >= selectedTraining.availableSpots">
                             <el-icon style="margin-right: 8px">
                                 <Check />
                             </el-icon>
@@ -121,18 +127,25 @@
                     </span>
                 </template>
             </el-dialog>
-            <el-dialog v-model="trainingDetailsVisible" title="Training Details" width="30%"
+            <el-dialog v-model="trainingDetailsVisible" title="Training Details" width="40%"
                 :before-close="handleCloseDialog" class="centered-dialog">
                 <div v-if="selectedTraining">
                     <p><strong>Training:</strong> {{ selectedTraining.type.name }}</p>
                     <p><strong>Trainer:</strong> {{ selectedTraining.trainer.firstName }} {{
-                        selectedTraining.trainer.lastName }}
-                    </p>
+                        selectedTraining.trainer.lastName }}</p>
                     <p><strong>Time:</strong> {{ formatTime(selectedTraining.startTime) }} - {{
-                        formatTime(selectedTraining.endTime)
-                        }}</p>
+                        formatTime(selectedTraining.endTime) }}</p>
                     <p><strong>Spots:</strong> {{ selectedTraining.availableSpots - selectedTraining.usedSpots }} / {{
                         selectedTraining.availableSpots }}</p>
+                    <p v-if="isAdmin || isTrainer"><strong>Booked Users:</strong></p>
+                    <ul v-if="selectedTraining.bookedUsers && (isAdmin || isTrainer)" class="booked-users-list">
+                        <li v-for="booking in selectedTraining.bookedUsers" :key="booking.id" class="booked-user-item">
+                            <span class="user-name">{{ booking.user.firstName }} {{ booking.user.lastName }}</span>
+                            <span class="status-badge" :class="booking.status.toLowerCase()">
+                                {{ booking.status }}
+                            </span>
+                        </li>
+                    </ul>
                 </div>
                 <template #footer v-if="isUser">
                     <span class="dialog-footer">
@@ -154,9 +167,11 @@
 <script>
 import { ElMessage } from 'element-plus'
 import { Plus, Check } from '@element-plus/icons-vue'
-import { getTrainingListAPI, createTrainingAPI, updateTrainingAPI, deleteTrainingAPI } from '@/api/training'
+import { getTrainingListAPI, createTrainingAPI, updateTrainingAPI, deleteTrainingAPI, getTrainingBookingsAPI } from '@/api/training'
 import { getTrainingTypeListAPI } from '@/api/training/type'
 import { getTrainersAPI } from '@/api/user'
+import { createBookingAPI } from '@/api/booking'
+import { getActiveSubscriptionListAPI } from '@/api/subscription'
 import Cookies from 'js-cookie'
 import HeaderTabs from '@/components/HeaderTabs.vue'
 import AppHeader from '@/components/AppHeader.vue'
@@ -187,9 +202,10 @@ export default {
             bookingDialogVisible: false,
             addEventDialogVisible: false,
             trainingDetailsVisible: false,
-            bookingForm: { name: '', date: '', time: '', training: null },
+            bookingForm: { date: '', time: '', training: null, subscriptionId: null },
+            availableSubscriptions: [],
             bookingRules: {
-                name: [{ required: true, message: 'Please enter your name', trigger: 'blur' }]
+                subscriptionId: [{ required: true, message: 'Please select a subscription', trigger: 'change' }]
             },
             newTraining: {
                 id: null,
@@ -260,11 +276,33 @@ export default {
             try {
                 const data = await getTrainingListAPI(start, end)
                 console.log('API response:', data)
-                this.trainings = this.groupTrainingsByDate(data)
+                const trainingsWithBookings = await Promise.all(data.map(async (training) => {
+                    let bookings = []
+                    if (!this.isUser) bookings = await this.fetchTrainingBookings(training.id)
+                    return { ...training, bookedUsers: bookings }
+                }))
+                this.trainings = this.groupTrainingsByDate(trainingsWithBookings)
             } catch (error) {
                 ElMessage.error('Failed to load trainings: ' + error.message)
+                console.error('Load trainings error:', error)
             } finally {
                 this.isLoading = false
+            }
+        },
+        async fetchTrainingBookings(trainingId) {
+            try {
+                const bookings = await getTrainingBookingsAPI(trainingId)
+                return bookings.map(booking => ({
+                    ...booking,
+                    user: {
+                        firstName: booking.user.firstName,
+                        lastName: booking.user.lastName
+                    }
+                }))
+            } catch (error) {
+                ElMessage.error(`Failed to load bookings for training ID ${trainingId}: ${error.message}`)
+                console.error(`Fetch bookings error for training ${trainingId}:`, error)
+                return []
             }
         },
         groupTrainingsByDate(trainings) {
@@ -300,20 +338,42 @@ export default {
         getEventsForSlot(hour, date) {
             return this.trainings[date]?.filter(training => this.formatTime(training.startTime) === hour) || []
         },
-        viewTrainingDetails(training) {
-            this.selectedTraining = training
-            this.trainingDetailsVisible = true
-        },
-        bookEventFromDetails() {
-            if (this.selectedTraining.usedSpots < this.selectedTraining.availableSpots) {
+        async viewTrainingDetails(training) {
+            if (this.isAdmin || this.isTrainer) {
+                this.selectedTraining = { ...training }
+                this.trainingDetailsVisible = true
+            } else if (this.isUser) {
+                this.selectedTraining = { ...training }
                 this.bookingForm = {
-                    name: '',
-                    date: dayjs(this.selectedTraining.startTime).tz(dayjs.tz.guess()).format('YYYY-MM-DD'),
-                    time: this.formatTime(this.selectedTraining.startTime),
-                    training: this.selectedTraining
+                    date: dayjs(training.startTime).tz(dayjs.tz.guess()).format('YYYY-MM-DD'),
+                    time: this.formatTime(training.startTime),
+                    training: training,
+                    subscriptionId: null
+                }
+                try {
+                    this.availableSubscriptions = await getActiveSubscriptionListAPI()
+                } catch (error) {
+                    ElMessage.error('Failed to load subscriptions: ' + error.message)
+                    console.error('Load subscriptions error:', error)
                 }
                 this.bookingDialogVisible = true
-                this.trainingDetailsVisible = false
+            }
+        },
+        async bookEventFromDetails(training) {
+            if (this.isUser && training.usedSpots < training.availableSpots) {
+                this.bookingForm = {
+                    date: dayjs(training.startTime).tz(dayjs.tz.guess()).format('YYYY-MM-DD'),
+                    time: this.formatTime(training.startTime),
+                    training: training,
+                    subscriptionId: null
+                }
+                try {
+                    this.availableSubscriptions = await getActiveSubscriptionListAPI()
+                } catch (error) {
+                    ElMessage.error('Failed to load subscriptions: ' + error.message)
+                    console.error('Load subscriptions error:', error)
+                }
+                this.bookingDialogVisible = true
             } else {
                 ElMessage.warning('This training is fully booked or no spots available!')
             }
@@ -340,6 +400,7 @@ export default {
                 this.trainers = await getTrainersAPI()
             } catch (error) {
                 ElMessage.error('Failed to load initial data: ' + error.message)
+                console.error('Load initial data error:', error)
             }
         },
         updateEndTime() {
@@ -366,6 +427,7 @@ export default {
                     ElMessage.success('Training deleted successfully')
                 } catch (error) {
                     ElMessage.error('Failed to delete training: ' + error.message)
+                    console.error('Delete training error:', error)
                 }
             } else {
                 ElMessage.warning('Only the trainer can delete their own trainings, or admin can delete any.')
@@ -405,6 +467,7 @@ export default {
                         } else {
                             ElMessage.error('An error occurred, please try again later')
                         }
+                        console.error('Save training error:', response || 'Unknown error')
                     }
                 }
             })
@@ -414,10 +477,16 @@ export default {
                 if (valid) {
                     const training = this.bookingForm.training
                     if (training.usedSpots < training.availableSpots) {
-                        training.usedSpots++
-                        ElMessage.success(`Booked ${training.type.name} with ${training.trainer.firstName} ${training.trainer.lastName} on ${this.bookingForm.date} at ${this.bookingForm.time} for ${this.bookingForm.name}`)
-                        this.bookingDialogVisible = false
-                        await this.updateTrainingBooking(training.id, this.bookingForm.name)
+                        try {
+                            await createBookingAPI(training.id, this.bookingForm.subscriptionId)
+                            training.usedSpots++
+                            ElMessage.success(`Booked ${training.type.name} with ${training.trainer.firstName} ${training.trainer.lastName} on ${this.bookingForm.date} at ${this.bookingForm.time}`)
+                            this.bookingDialogVisible = false
+                            await this.loadTrainings()
+                        } catch (error) {
+                            ElMessage.error('Failed to book training: ' + error.message)
+                            console.error('Booking error:', error)
+                        }
                     } else {
                         ElMessage.error('No available spots left!')
                     }
@@ -443,13 +512,7 @@ export default {
             this.generateWeek()
         },
         handleCloseDialog(done) {
-            this.$confirm('Are you sure you want to close this dialog?', 'Warning', {
-                confirmButtonText: 'Yes',
-                cancelButtonText: 'No',
-                type: 'warning'
-            }).then(() => {
-                done()
-            })
+            done()
         }
     }
 }
@@ -463,7 +526,6 @@ export default {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-
 }
 
 .content-wrapper {
@@ -591,7 +653,7 @@ h2 {
 }
 
 .booked {
-    background: #e0e0e0;
+    background: #e0e0f0;
     opacity: 0.7;
 }
 
@@ -661,6 +723,55 @@ h2 {
     width: 80%;
 }
 
+.booked-users-list {
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.booked-user-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.3s ease;
+}
+
+.booked-user-item:last-child {
+    border-bottom: none;
+}
+
+.booked-user-item:hover {
+    background: #f9f9f9;
+}
+
+.user-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.status-badge.active {
+    background: #28a745;
+}
+
+.status-badge.cancelled {
+    background: #dc3545;
+}
+
 @media (max-width: 768px) {
     .training-types-container {
         padding: 16px;
@@ -727,6 +838,24 @@ h2 {
 
     .dialog-footer {
         width: 90%;
+    }
+
+    .booked-users-list {
+        margin: 10px 0;
+        font-size: 12px;
+    }
+
+    .booked-user-item {
+        padding: 8px 10px;
+    }
+
+    .user-name {
+        font-size: 12px;
+    }
+
+    .status-badge {
+        padding: 3px 8px;
+        font-size: 10px;
     }
 }
 </style>

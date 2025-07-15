@@ -11,3 +11,8 @@ export async function updateSubscriptionAPI(subscriptionId, subscriptionData) {
         subscriptionData,
     )
 }
+
+export async function getActiveSubscriptionListAPI() {
+    return makeApiRequest(`${API_URL}/subscription`, 'GET', null, { filter: 'active' })
+
+}
